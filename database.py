@@ -1,5 +1,7 @@
 import sqlite3
+from functools import cache
 from pathlib import Path
+from sqlite3 import Connection
 
 from job_model import Job
 
@@ -12,8 +14,13 @@ def get_sql_from_file(filename: str) -> str:
     return sql_file.read_text(encoding="utf-8")
 
 
+@cache
+def get_connect() -> Connection:
+    return sqlite3.connect(DATABASE_NAME)
+
+
 def prepare() -> None:
-    conn = sqlite3.connect(DATABASE_NAME)
+    conn = get_connect()
     cursor = conn.cursor()
 
     sql = get_sql_from_file("create_table_jobs")
@@ -21,7 +28,7 @@ def prepare() -> None:
 
 
 def save_db(jobs: list[Job]) -> None:
-    conn = sqlite3.connect(DATABASE_NAME)
+    conn = get_connect()
     cursor = conn.cursor()
 
     sql = get_sql_from_file("insert_new_jobs")
@@ -30,11 +37,11 @@ def save_db(jobs: list[Job]) -> None:
 
 
 def get_jobs_from_date(date: str) -> list[Job]:
-    conn = sqlite3.connect(DATABASE_NAME)
+    conn = get_connect()
     cursor = conn.cursor()
 
     sql = get_sql_from_file("select_jobs")
     cursor.execute(sql, (date,))
 
-    rr = cursor.fetchall()
-    return [Job(*item) for item in rr]
+    jobs = cursor.fetchall()
+    return [Job(*job) for job in jobs]
