@@ -7,12 +7,15 @@ class Job(NamedTuple):
     title: str
     category: str
     description: str
-    date: str = datetime.date.today()
+    date: str = str(datetime.date.today())
 
     def __hash__(self) -> int:
         return hash((self.href, self.title, self.category, self.description))
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Job):
+            return False
+
         return (
             self.href == other.href
             and self.title == other.title

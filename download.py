@@ -1,26 +1,33 @@
 import datetime
 from pathlib import Path
+from typing import TypedDict
 
 import requests
 
 
-def download_jobs_html() -> dict:
+class JobResponse(TypedDict):
+    payload: list[list[str]]
+
+
+def download_jobs_html() -> JobResponse:
     url = "https://vk.com/jobs"
     params = {
         "category": "jobs_cat_all",
-        "list_only": 1,
+        "list_only": "1",
     }
     data = {
-        "al": 1,
+        "al": "1",
     }
     headers = {"x-requested-with": "XMLHttpRequest"}
 
     r = requests.post(url, params=params, data=data, headers=headers)
+    r.encoding = "windows-1251"
 
-    return r.json()
+    response: JobResponse = r.json()
+    return response
 
 
-def parse_jobs_html(response: dict) -> str:
+def parse_jobs_html(response: JobResponse) -> str:
     return response["payload"][1][0]
 
 
